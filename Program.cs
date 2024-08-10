@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Project1;
+using System;
 using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
@@ -121,11 +122,12 @@ internal class Program
 
     internal static async Task Main()
     {
-        HttpListener httpListener = CreateHttpListener(
+        HttpListener httpListener = new HttpListenerManager(
             HTTP_LISTENER_PROTOCOL,
-            HTTP_LISTENER_PORT,  
+            HTTP_LISTENER_PORT,
             HTTP_LISTENER_IP_FALLBACK
-          );
+          ).Listener();
+
 
         while (true)
         {
@@ -152,35 +154,6 @@ internal class Program
                 httpContext.Response.Close();
             }
         }
-    }
-
-    internal static HttpListener CreateHttpListener(string protocol, string port, string ipFallback)
-    {
-        HttpListener httpListener = new();
-        string prefix = ResolveHttpPrefix(protocol, port, ipFallback);
-        httpListener.Prefixes.Add(prefix);
-        httpListener.Start();
-        
-        Console.WriteLine($"[Server]: Start at {prefix}");
-
-        return httpListener;
-    }
-
-    internal static string ResolveHttpPrefix(string protocol, string port, string ipFallback)
-    {
-        string hostName = Dns.GetHostName();
-        IPAddress[] addresses = Dns.GetHostAddresses(hostName);
-        string prefix = $"{protocol}://{ipFallback}:{port}/";
-
-        foreach (IPAddress address in addresses)
-        {
-            if (address.AddressFamily == AddressFamily.InterNetwork)
-            {
-                prefix = $"{protocol}://{address}:{port}/";
-            }
-        }
-
-        return prefix;
     }
 
     internal static async Task HandleController(HttpListenerContext httpContext)
