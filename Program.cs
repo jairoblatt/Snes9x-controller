@@ -124,96 +124,136 @@ internal class Program
     {
 
         List<string> snesWindowTitles = GetSnesWindowTitlev2();
-        bool continueRunning = snesWindowTitles.Count > 1;
+        var selectedWindowTitle = "";
+
+        bool continueRunning = true;
 
         while (continueRunning)
         {
-            Console.Clear(); // Limpa a tela a cada iteração para uma melhor visualização
-            DisplayWindowTitles(snesWindowTitles);
+            Console.Clear();
 
-            Console.WriteLine("Pressione um número para selecionar a janela, 'R' para atualizar a lista ou 'S' para sair.");
-
-            // Captura uma tecla pressionada
-            var key = Console.ReadKey(true); // 'true' para não mostrar a tecla pressionada
-
-            if (key.Key == ConsoleKey.R)
+            if (snesWindowTitles.Count == 0)
             {
-                // Atualiza a lista de títulos de janelas
-                snesWindowTitles = GetSnesWindowTitlev2();
+                Console.WriteLine("No Snes9x windows were found");
+                Console.WriteLine("Press U to update \nPress E to exit");
+
+                var notFoundKey = Console.ReadKey(true);
+
+                if (notFoundKey.Key == ConsoleKey.U)
+                {
+                    DisplayUpdating();
+                    snesWindowTitles = GetSnesWindowTitlev2();
+
+                }
+                else if (notFoundKey.Key == ConsoleKey.E)
+                {
+                    continueRunning = false;
+                }
+
             }
-            else if (key.Key == ConsoleKey.S)
+            else if (snesWindowTitles.Count == 1)
             {
+                selectedWindowTitle = snesWindowTitles[0];
                 continueRunning = false;
-            }
-            else if (key.Key >= ConsoleKey.D1 && key.Key <= ConsoleKey.D9)
-            {
-                int choice = key.Key - ConsoleKey.D1 + 1;
-                if (choice > 0 && choice <= snesWindowTitles.Count)
-                {
-                    string selectedWindowTitle = snesWindowTitles[choice - 1];
-                    Console.WriteLine($"Você escolheu a janela: {selectedWindowTitle}");
-                    // Aqui você pode fazer o que quiser com a janela escolhida
-                }
-                else
-                {
-                    Console.WriteLine("Escolha inválida.");
-                }
-                Console.WriteLine("Pressione qualquer tecla para continuar...");
-                Console.ReadKey();
             }
             else
             {
-                Console.WriteLine("Tecla inválida.");
-                Console.WriteLine("Pressione qualquer tecla para tentar novamente...");
-                Console.ReadKey();
+                DisplayWindowTitles(snesWindowTitles);
+
+                Console.WriteLine(
+                "Press a number to select the window" +
+                "\n Press U to update" +
+                "\n Press E to exit"
+  );
+
+                var key = Console.ReadKey(true);
+
+                if (key.Key == ConsoleKey.U)
+                {
+                    DisplayUpdating();
+
+                    snesWindowTitles = GetSnesWindowTitlev2();
+                }
+                else if (key.Key == ConsoleKey.E)
+                {
+                    continueRunning = false;
+                }
+                else if (key.Key >= ConsoleKey.D1 && key.Key <= ConsoleKey.D9)
+                {
+                    int choice = key.Key - ConsoleKey.D1 + 1;
+
+                    if (choice > 0 && choice <= snesWindowTitles.Count)
+                    {
+                        Console.Clear();
+                        selectedWindowTitle = snesWindowTitles[choice - 1];
+                        continueRunning = false;
+                    }
+                }
             }
         }
 
 
-        HttpListener httpListener = new HttpListenerManager(
-            HTTP_LISTENER_PROTOCOL,
-            HTTP_LISTENER_PORT,
-            HTTP_LISTENER_IP_FALLBACK
-          ).Listener();
-
-        while (true)
+        if (!String.IsNullOrEmpty(selectedWindowTitle))
         {
+            HttpListener httpListener = new HttpListenerManager(
+                HTTP_LISTENER_PROTOCOL,
+                HTTP_LISTENER_PORT,
+                HTTP_LISTENER_IP_FALLBACK
+             ).Listener();
+
+            while (true)
+            {
 
 
 
 
 
-            /*            HttpListenerContext httpContext = await httpListener.GetContextAsync();
+                /*            HttpListenerContext httpContext = await httpListener.GetContextAsync();
 
-                        string? absolutePath = null;
+                            string? absolutePath = null;
 
-                        if (httpContext.Request.Url != null)
-                        {
-                            absolutePath = httpContext.Request.Url.AbsolutePath;
-                        }
+                            if (httpContext.Request.Url != null)
+                            {
+                                absolutePath = httpContext.Request.Url.AbsolutePath;
+                            }
 
-                        if (httpContext.Request.IsWebSocketRequest)
-                        {
-                            await HandleWebSocketConnection(httpContext);
-                        }
-                        else if (absolutePath == "/controller")
-                        {
-                            await HandleController(httpContext);
-                        }
-                        else
-                        {
-                            httpContext.Response.StatusCode = 400;
-                            httpContext.Response.Close();
-                        }*/
+                            if (httpContext.Request.IsWebSocketRequest)
+                            {
+                                await HandleWebSocketConnection(httpContext);
+                            }
+                            else if (absolutePath == "/controller")
+                            {
+                                await HandleController(httpContext);
+                            }
+                            else
+                            {
+                                httpContext.Response.StatusCode = 400;
+                                httpContext.Response.Close();
+                            }*/
+            }
+        }
+    }
+
+    static void DisplayUpdating()
+    {
+        string baseMessage = "Updating";
+        char[] spinner = { '|', '/', '-', '\\' };
+
+        for (int i = 0; i < spinner.Length; i++)
+        {
+            Console.Clear();
+            Console.WriteLine($" {spinner[i]} {baseMessage}");
+            Thread.Sleep(333);
         }
     }
 
     static void DisplayWindowTitles(List<string> windowTitles)
     {
         Console.WriteLine("Escolha uma janela da lista abaixo:");
+
         for (int i = 0; i < windowTitles.Count; i++)
         {
-            Console.WriteLine($"{i + 1}. {windowTitles[i]}");
+            Console.WriteLine($" {i + 1}. {windowTitles[i]}");
         }
     }
 

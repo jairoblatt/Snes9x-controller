@@ -16,7 +16,16 @@ namespace Project1
             httpListener.Prefixes.Add(prefix);
             httpListener.Start();
 
-            Console.WriteLine($"[Server]: Started at {prefix}");
+            Console.WriteLine();
+                Console.WriteLine(@" ___________            __              ._.");
+                Console.WriteLine(@" \_   _____/ ____      |__| ____ ___.__.| |");
+                Console.WriteLine(@"  |    __)_ /    \\    |  |/  _ |   |  || |");
+                Console.WriteLine(@"  |        \   |  \\   |  (  <_> )___  | \|");
+                Console.WriteLine(@"  \______  /___|  /\\__|  |\____// ____| __");
+                Console.WriteLine(@"         \/     \/\_______|      \/      \/");
+            Console.WriteLine();
+
+            Console.WriteLine($" Your Snes9x controller is available at \n {prefix}controller");
 
             return httpListener;
         }
