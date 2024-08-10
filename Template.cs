@@ -15,7 +15,7 @@ namespace Project1
             Two = 2,
         }
 
-        internal const string PATH_MATCH = "/player";
+        internal const string PATH_MATCH = "/controller";
         internal const string TEMPLATE_FOLDER_NAME = "templates";
         internal const string TEMPLATE_CONTROLLER_FILE = "controller.html";
         internal const string TEMPLATE_CONTROLLER_DELIMITER_PLAYER = "<%player%>";

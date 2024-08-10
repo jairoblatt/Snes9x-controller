@@ -31,14 +31,7 @@
 
       html,
       body {
-        background: -webkit-gradient(
-          linear,
-          left top,
-          right top,
-          from(#232526),
-          to(#414345)
-        );
-        background: linear-gradient(to right, #232526, #414345);
+        background-color: #232526;
         font-family: "AgencyFB", sans-serif;
         font-size: 20px;
         height: 100%;
@@ -321,13 +314,8 @@
         text-align: center;
         text-transform: uppercase;
         top: 1em;
-      }
-
-      .logo__header {
-        color: #656565;
-        display: inline;
-        font-size: 1.4rem;
-        font-weight: 700;
+        left: 50%;
+        transform: translateX(-50%);
       }
 
       .logo__byline {
@@ -581,8 +569,7 @@
         </div>
         <div class="middle-pad">
           <div class="logo">
-            <h1 class="logo__header">Jario</h1>
-            <h2 class="logo__byline">Entertainment System</h2>
+            <h2 class="logo__byline"></h2>
           </div>
           <div class="start-select">
             <div id="command-start" class="start-select__button button--start">
@@ -662,15 +649,19 @@
         Down: 1,
       });
 
-      document.querySelector(".logo").addEventListener("dblclick", () => {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen();
-        } else {
-          document.exitFullscreen();
-        }
+        const client = new WebSocket("wss://192.168.1.6:9999/");
+
+        document.querySelector(".logo").addEventListener("dblclick", () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
       });
 
-      const client = new WebSocket("wss://192.168.1.6:9999/");
+
+        document.querySelector(".logo__byline").textContent = `Player ${PLAYER}`;
+
 
       client.onopen = () => {
         console.log("Connection established");

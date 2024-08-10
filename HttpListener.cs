@@ -30,6 +30,7 @@ namespace Project1
 
             List<string> controllersPath = Template.GetControllersPath();
             controllersPath.ForEach(item => Console.WriteLine($" {prefix}{item.Replace("/", "")}"));
+            Console.WriteLine();
 
             return httpListener;
         }
