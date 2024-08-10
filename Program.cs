@@ -122,37 +122,98 @@ internal class Program
 
     internal static async Task Main()
     {
+
+        List<string> snesWindowTitles = GetSnesWindowTitlev2();
+        bool continueRunning = snesWindowTitles.Count > 1;
+
+        while (continueRunning)
+        {
+            Console.Clear(); // Limpa a tela a cada iteração para uma melhor visualização
+            DisplayWindowTitles(snesWindowTitles);
+
+            Console.WriteLine("Pressione um número para selecionar a janela, 'R' para atualizar a lista ou 'S' para sair.");
+
+            // Captura uma tecla pressionada
+            var key = Console.ReadKey(true); // 'true' para não mostrar a tecla pressionada
+
+            if (key.Key == ConsoleKey.R)
+            {
+                // Atualiza a lista de títulos de janelas
+                snesWindowTitles = GetSnesWindowTitlev2();
+            }
+            else if (key.Key == ConsoleKey.S)
+            {
+                continueRunning = false;
+            }
+            else if (key.Key >= ConsoleKey.D1 && key.Key <= ConsoleKey.D9)
+            {
+                int choice = key.Key - ConsoleKey.D1 + 1;
+                if (choice > 0 && choice <= snesWindowTitles.Count)
+                {
+                    string selectedWindowTitle = snesWindowTitles[choice - 1];
+                    Console.WriteLine($"Você escolheu a janela: {selectedWindowTitle}");
+                    // Aqui você pode fazer o que quiser com a janela escolhida
+                }
+                else
+                {
+                    Console.WriteLine("Escolha inválida.");
+                }
+                Console.WriteLine("Pressione qualquer tecla para continuar...");
+                Console.ReadKey();
+            }
+            else
+            {
+                Console.WriteLine("Tecla inválida.");
+                Console.WriteLine("Pressione qualquer tecla para tentar novamente...");
+                Console.ReadKey();
+            }
+        }
+
+
         HttpListener httpListener = new HttpListenerManager(
             HTTP_LISTENER_PROTOCOL,
             HTTP_LISTENER_PORT,
             HTTP_LISTENER_IP_FALLBACK
           ).Listener();
 
-
         while (true)
         {
-            HttpListenerContext httpContext = await httpListener.GetContextAsync();
 
-            string? absolutePath = null;
 
-            if (httpContext.Request.Url != null)
-            {
-                absolutePath = httpContext.Request.Url.AbsolutePath;
-            }
 
-            if (httpContext.Request.IsWebSocketRequest)
-            {
-                await HandleWebSocketConnection(httpContext);
-            }
-            else if (absolutePath == "/controller")
-            {
-                await HandleController(httpContext);
-            }
-            else
-            {
-                httpContext.Response.StatusCode = 400;
-                httpContext.Response.Close();
-            }
+
+
+            /*            HttpListenerContext httpContext = await httpListener.GetContextAsync();
+
+                        string? absolutePath = null;
+
+                        if (httpContext.Request.Url != null)
+                        {
+                            absolutePath = httpContext.Request.Url.AbsolutePath;
+                        }
+
+                        if (httpContext.Request.IsWebSocketRequest)
+                        {
+                            await HandleWebSocketConnection(httpContext);
+                        }
+                        else if (absolutePath == "/controller")
+                        {
+                            await HandleController(httpContext);
+                        }
+                        else
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            httpContext.Response.Close();
+                        }*/
+        }
+    }
+
+    static void DisplayWindowTitles(List<string> windowTitles)
+    {
+        Console.WriteLine("Escolha uma janela da lista abaixo:");
+        for (int i = 0; i < windowTitles.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {windowTitles[i]}");
         }
     }
 
@@ -331,6 +392,34 @@ internal class Program
         }
 
         return FindWindow(null, snesTitle);
+    }
+
+    static List<string> GetSnesWindowTitlev2()
+    {
+        List<string> titles = [];
+
+        EnumWindows((hWnd, lParam) =>
+        {
+            if (IsWindowVisible(hWnd))
+            {
+                StringBuilder windowText = new(256);
+
+                GetWindowText(hWnd, windowText, windowText.Capacity);
+
+                string windowTitle = windowText.ToString();
+
+                if (!string.IsNullOrEmpty(windowTitle) && windowTitle.Contains("Snes9x"))
+                {
+                    titles.Add(windowTitle);
+                }
+            }
+
+            return true;
+
+        }, IntPtr.Zero);
+
+
+        return titles;
     }
 
     static string? GetSnesWindowTitle()
