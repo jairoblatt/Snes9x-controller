@@ -15,50 +15,69 @@ namespace Project1
             Two = 2,
         }
 
-        public enum Controllers
-        {
-
-        }
+        internal const string PATH_MATCH = "/player";
+        internal const string TEMPLATE_FOLDER_NAME = "templates";
+        internal const string TEMPLATE_CONTROLLER_FILE = "controller.html";
+        internal const string TEMPLATE_CONTROLLER_DELIMITER_PLAYER = "<%player%>";
 
         public static async Task Handle(HttpListenerContext httpContext)
         {
-            byte[]? cTemplate = GetControllerByPlayer(Template.Players.One);
+            Players? player = ResolvePlayer(httpContext);
+            HttpListenerResponse resp = httpContext.Response;
 
-            string? absolutePath = httpContext.Request.Url?.AbsolutePath;
-            string? playerPath = null;
-
-
-            if (absolutePath != null)
+            if (player.HasValue)
             {
-                playerPath = absolutePath.Replace("/player-", "");
-            }
+                byte[]? template = GetControllerByPlayer(player.Value);
 
-
-            if (playerPath != null)
-            {
-                try
+                if (template != null)
                 {
-                    int player = int.Parse(playerPath);
+                    resp.StatusCode = 200;
+                    resp.ContentType = "text/html";
+                    resp.ContentLength64 = template.Length;
+                    await resp.OutputStream.WriteAsync(template);
                 }
-                catch
+                else
                 {
-                    httpContext.Response.StatusCode = 404;
-                    httpContext.Response.Close();
+                    resp.StatusCode = 404;
                 }
-            }
-            else if (cTemplate?.Length > 1)
-            {
-                httpContext.Response.ContentType = "text/html";
-                httpContext.Response.ContentLength64 = cTemplate.Length;
-                await httpContext.Response.OutputStream.WriteAsync(cTemplate, 0, cTemplate.Length);
-                httpContext.Response.StatusCode = 200;
             }
             else
             {
-                httpContext.Response.StatusCode = 404;
+                resp.StatusCode = 404;
             }
 
-            httpContext.Response.Close();
+            resp.Close();
+        }
+
+        public static List<string> GetControllersPath()
+        {
+            List<string> paths = [];
+
+            foreach (Players player in Enum.GetValues(typeof(Players)))
+            {
+                paths.Add($"{PATH_MATCH}-{(int)player}");
+            }
+
+            return paths;
+        }
+
+        private static Players? ResolvePlayer(HttpListenerContext httpContext)
+        {
+            string? absolutePath = httpContext.Request.Url?.AbsolutePath;
+
+            if (absolutePath is null || !absolutePath.StartsWith($"{PATH_MATCH}-"))
+            {
+                return default;
+            }
+
+            string playerPath = absolutePath[$"{PATH_MATCH}-".Length..];
+
+            if (int.TryParse(playerPath, out int player) && Enum.IsDefined(typeof(Players), player))
+            {
+                return (Players)player;
+            }
+
+            return default;
         }
 
         public static bool CheckPlayerPath(HttpListenerContext httpContext)
@@ -70,13 +89,17 @@ namespace Project1
                 absolutePath = httpContext.Request.Url.AbsolutePath;
             }
 
-            return !String.IsNullOrEmpty(absolutePath) && absolutePath.StartsWith("/player");
+            return !String.IsNullOrEmpty(absolutePath) && absolutePath.StartsWith(PATH_MATCH);
         }
 
 
         public static byte[]? GetControllerByPlayer(Players player)
         {
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "templates", "controller.html");
+            string filePath = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                TEMPLATE_FOLDER_NAME,
+                TEMPLATE_CONTROLLER_FILE
+             );
 
             if (!File.Exists(filePath))
             {
@@ -91,7 +114,7 @@ namespace Project1
             }
 
 
-            fileContent = fileContent.Replace("{{ player }}", ((int)player).ToString());
+            fileContent = fileContent.Replace(TEMPLATE_CONTROLLER_DELIMITER_PLAYER, ((int)player).ToString());
 
 
             return Encoding.UTF8.GetBytes(fileContent);

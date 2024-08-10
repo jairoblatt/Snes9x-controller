@@ -26,7 +26,10 @@ namespace Project1
             Console.WriteLine(@"         \/     \/\_______|      \/      \/");
             Console.WriteLine();
 
-            Console.WriteLine($" Your Snes9x controller is available at \n {prefix}controller \n");
+            Console.WriteLine($" Your Snes9x controllers is available");
+
+            List<string> controllersPath = Template.GetControllersPath();
+            controllersPath.ForEach(item => Console.WriteLine($" {prefix}{item.Replace("/", "")}"));
 
             return httpListener;
         }
