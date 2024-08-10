@@ -2,7 +2,6 @@
 {
     internal class Log
     {
-
         public static void Server(string? value)
         {
             Console.WriteLine($"[Server]: {value}");
