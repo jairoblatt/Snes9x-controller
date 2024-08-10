@@ -182,7 +182,7 @@ internal class Program
         HttpListenerWebSocketContext webSocketContext = await httpContext.AcceptWebSocketAsync(null);
         WebSocket webSocket = webSocketContext.WebSocket;
 
-        Console.WriteLine("[Socket]: Client connected");
+        Log.Socket("Client connected");
 
         try
         {
@@ -193,9 +193,9 @@ internal class Program
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    Console.WriteLine("[Socket]: Client initiated close handshake");
+                    Log.Socket("Client initiated close handshake");
                     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
-                    Console.WriteLine("[Socket]: Client disconnected");
+                    Log.Socket("Client disconnected");
                 }
                 else
                 {
@@ -205,7 +205,7 @@ internal class Program
 
                     if (socketPayload == null)
                     {
-                        Console.WriteLine("[Socket]: Payload malformed");
+                        Log.Socket("Payload malformed");
                     }
                     else
                     {
@@ -216,7 +216,7 @@ internal class Program
                         }
                         else
                         {
-                            Console.WriteLine("[Socket]: Invalid action and/or command");
+                            Log.Socket("Invalid action and/or command");
                         }
                     }
 
@@ -225,14 +225,13 @@ internal class Program
         }
         catch (WebSocketException ex)
         {
-            Console.WriteLine($"WebSocket error: {ex.Message}");
-            Console.WriteLine($"WebSocket state: {webSocket.State}");
+            Log.Socket($"\n Error: {ex.Message} \n State: {webSocket.State}");
         }
         finally
         {
             if (webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived)
             {
-                Console.WriteLine("[Socket]: Closing WebSocket due to error or client disconnection");
+                Log.Socket("Closing WebSocket due to error or client disconnection");
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing due to error", CancellationToken.None);
             }
         }
