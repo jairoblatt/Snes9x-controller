@@ -204,32 +204,28 @@ internal class Program
             while (true)
             {
 
+                 HttpListenerContext httpContext = await httpListener.GetContextAsync();
 
+                 string? absolutePath = null;
 
+                 if (httpContext.Request.Url != null)
+                    {
+                       absolutePath = httpContext.Request.Url.AbsolutePath;
+                    }
 
-
-                /*            HttpListenerContext httpContext = await httpListener.GetContextAsync();
-
-                            string? absolutePath = null;
-
-                            if (httpContext.Request.Url != null)
-                            {
-                                absolutePath = httpContext.Request.Url.AbsolutePath;
-                            }
-
-                            if (httpContext.Request.IsWebSocketRequest)
-                            {
-                                await HandleWebSocketConnection(httpContext);
-                            }
-                            else if (absolutePath == "/controller")
-                            {
-                                await HandleController(httpContext);
-                            }
-                            else
-                            {
-                                httpContext.Response.StatusCode = 400;
-                                httpContext.Response.Close();
-                            }*/
+                  if (httpContext.Request.IsWebSocketRequest)
+                     {
+                       await HandleWebSocketConnection(httpContext);
+                    }
+                   else if (absolutePath == "/controller")
+                     {
+                        await HandleController(httpContext);
+                     }
+                   else
+                     {
+                       httpContext.Response.StatusCode = 400;
+                       httpContext.Response.Close();
+                     }
             }
         }
     }

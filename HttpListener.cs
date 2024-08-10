@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Net;
+using System.Diagnostics;
 
 namespace Project1
 {
@@ -17,15 +18,28 @@ namespace Project1
             httpListener.Start();
 
             Console.WriteLine();
-                Console.WriteLine(@" ___________            __              ._.");
-                Console.WriteLine(@" \_   _____/ ____      |__| ____ ___.__.| |");
-                Console.WriteLine(@"  |    __)_ /    \\    |  |/  _ |   |  || |");
-                Console.WriteLine(@"  |        \   |  \\   |  (  <_> )___  | \|");
-                Console.WriteLine(@"  \______  /___|  /\\__|  |\____// ____| __");
-                Console.WriteLine(@"         \/     \/\_______|      \/      \/");
+            Console.WriteLine(@" ___________            __              ._.");
+            Console.WriteLine(@" \_   _____/ ____      |__| ____ ___.__.| |");
+            Console.WriteLine(@"  |    __)_ /    \\    |  |/  _ |   |  || |");
+            Console.WriteLine(@"  |        \   |  \\   |  (  <_> )___  | \|");
+            Console.WriteLine(@"  \______  /___|  /\\__|  |\____// ____| __");
+            Console.WriteLine(@"         \/     \/\_______|      \/      \/");
             Console.WriteLine();
 
-            Console.WriteLine($" Your Snes9x controller is available at \n {prefix}controller");
+            Console.WriteLine($" Your Snes9x controller is available at \n {prefix}controller \n");
+
+            for (int i = 5; i > 0; i--)
+            {
+                Console.WriteLine($"Automatically open url in {i}s");
+
+                Thread.Sleep(1000);
+
+                if (i == 0)
+                {
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start https://192.168.1.6:9999/controller") { CreateNoWindow = true });
+                }
+            }
+
 
             return httpListener;
         }
