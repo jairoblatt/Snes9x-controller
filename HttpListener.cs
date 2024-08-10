@@ -28,19 +28,6 @@ namespace Project1
 
             Console.WriteLine($" Your Snes9x controller is available at \n {prefix}controller \n");
 
-            for (int i = 5; i > 0; i--)
-            {
-                Console.WriteLine($"Automatically open url in {i}s");
-
-                Thread.Sleep(1000);
-
-                if (i == 0)
-                {
-                    Process.Start(new ProcessStartInfo("cmd", $"/c start https://192.168.1.6:9999/controller") { CreateNoWindow = true });
-                }
-            }
-
-
             return httpListener;
         }
 

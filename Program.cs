@@ -32,6 +32,8 @@ internal class Program
         Down
     }
 
+
+
     class SocketPayload
     {
         public Commands command { get; set; }
@@ -122,7 +124,6 @@ internal class Program
 
     internal static async Task Main()
     {
-
         List<string> snesWindowTitles = GetSnesWindowTitlev2();
         var selectedWindowTitle = "";
 
@@ -204,28 +205,23 @@ internal class Program
             while (true)
             {
 
-                 HttpListenerContext httpContext = await httpListener.GetContextAsync();
+                HttpListenerContext httpContext = await httpListener.GetContextAsync();
 
-                 string? absolutePath = null;
 
-                 if (httpContext.Request.Url != null)
-                    {
-                       absolutePath = httpContext.Request.Url.AbsolutePath;
-                    }
 
-                  if (httpContext.Request.IsWebSocketRequest)
-                     {
-                       await HandleWebSocketConnection(httpContext);
-                    }
-                   else if (absolutePath == "/controller")
-                     {
-                        await HandleController(httpContext);
-                     }
-                   else
-                     {
-                       httpContext.Response.StatusCode = 400;
-                       httpContext.Response.Close();
-                     }
+                if (httpContext.Request.IsWebSocketRequest)
+                {
+                    await HandleWebSocketConnection(httpContext);
+                }
+                else if (Template.CheckPlayerPath(httpContext))
+                {
+                    await Template.Handle(httpContext);
+                }
+                else
+                {
+                    httpContext.Response.StatusCode = 400;
+                    httpContext.Response.Close();
+                }
             }
         }
     }
@@ -255,14 +251,14 @@ internal class Program
 
     internal static async Task HandleController(HttpListenerContext httpContext)
     {
-        string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "templates", "controller.html");
+        byte[]? cTemplate = Template.GetControllerByPlayer(Template.Players.One);
 
-        if (File.Exists(filePath))
+
+        if (cTemplate?.Length > 1)
         {
-            byte[] fileBytes = File.ReadAllBytes(filePath);
             httpContext.Response.ContentType = "text/html";
-            httpContext.Response.ContentLength64 = fileBytes.Length;
-            await httpContext.Response.OutputStream.WriteAsync(fileBytes, 0, fileBytes.Length);
+            httpContext.Response.ContentLength64 = cTemplate.Length;
+            await httpContext.Response.OutputStream.WriteAsync(cTemplate, 0, cTemplate.Length);
             httpContext.Response.StatusCode = 200;
         }
         else
