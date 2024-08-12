@@ -1,10 +1,7 @@
 ﻿using Project1;
 using System;
-using System.ComponentModel.Design;
 using System.Net;
-using System.Net.Sockets;
 using System.Net.WebSockets;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -32,13 +29,13 @@ internal class Program
         Down
     }
 
-
-
     class SocketPayload
     {
         public Commands command { get; set; }
         public Actions action { get; set; }
         public string? timestamp { get; set; }
+        public string? player { get; set; }
+        public string? token { get; set; }
     }
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -124,10 +121,10 @@ internal class Program
 
     internal static async Task Main()
     {
-        List<string> snesWindowTitles = GetSnesWindowTitlev2();
-        var selectedWindowTitle = "";
 
-        bool continueRunning = true;
+        var snesWindowTitles = GetSnesWindowTitlev2();
+        var selectedWindowTitle = "";
+        var continueRunning = true;
 
         while (continueRunning)
         {
@@ -196,7 +193,7 @@ internal class Program
 
         if (!String.IsNullOrEmpty(selectedWindowTitle))
         {
-            HttpListener httpListener = new HttpListenerManager(
+            var httpListener = new HttpListenerManager(
                 HTTP_LISTENER_PROTOCOL,
                 HTTP_LISTENER_PORT,
                 HTTP_LISTENER_IP_FALLBACK
@@ -204,18 +201,15 @@ internal class Program
 
             while (true)
             {
-
-                HttpListenerContext httpContext = await httpListener.GetContextAsync();
-
-
+                var httpContext = await httpListener.GetContextAsync();
 
                 if (httpContext.Request.IsWebSocketRequest)
                 {
                     await HandleWebSocketConnection(httpContext);
                 }
-                else if (Template.CheckPlayerPath(httpContext))
+                else if (Controller.MatchPath(httpContext))
                 {
-                    await Template.Handle(httpContext);
+                    await Controller.Handle(httpContext);
                 }
                 else
                 {
@@ -249,37 +243,16 @@ internal class Program
         }
     }
 
-    internal static async Task HandleController(HttpListenerContext httpContext)
-    {
-        byte[]? cTemplate = Template.GetControllerByPlayer(Template.Players.One);
-
-
-        if (cTemplate?.Length > 1)
-        {
-            httpContext.Response.ContentType = "text/html";
-            httpContext.Response.ContentLength64 = cTemplate.Length;
-            await httpContext.Response.OutputStream.WriteAsync(cTemplate, 0, cTemplate.Length);
-            httpContext.Response.StatusCode = 200;
-        }
-        else
-        {
-            httpContext.Response.StatusCode = 404;
-        }
-
-        httpContext.Response.Close();
-    }
-
     internal static async Task HandleWebSocketConnection(HttpListenerContext httpContext)
     {
         byte[] buffer = new byte[1024];
-        HttpListenerWebSocketContext webSocketContext = await httpContext.AcceptWebSocketAsync(null);
-        WebSocket webSocket = webSocketContext.WebSocket;
+        var webSocketContext = await httpContext.AcceptWebSocketAsync(null);
+        var webSocket = webSocketContext.WebSocket;
 
         Log.Socket("Client connected");
 
         try
         {
-
             while (webSocket.State == WebSocketState.Open)
             {
                 WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
@@ -294,23 +267,21 @@ internal class Program
                 {
                     string payload = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
-                    SocketPayload socketPayload = JsonSerializer.Deserialize<SocketPayload>(payload);
+                    var socketPayload = JsonSerializer.Deserialize<SocketPayload>(payload);
 
                     if (socketPayload == null)
                     {
                         Log.Socket("Payload malformed");
                     }
-                    else
+                    else if (
+                        Enum.IsDefined(typeof(Commands), socketPayload.command) && Enum.IsDefined(typeof(Actions), socketPayload.action))
                     {
 
-                        if (Enum.IsDefined(typeof(Commands), socketPayload.command) && Enum.IsDefined(typeof(Actions), socketPayload.action))
-                        {
-                            SimulateKeyPress(socketPayload);
-                        }
-                        else
-                        {
-                            Log.Socket("Invalid action and/or command");
-                        }
+                        SimulateKeyPress(socketPayload);
+                    }
+                    else
+                    {
+                        Log.Socket("Invalid action and/or command");
                     }
 
                 }
@@ -330,8 +301,10 @@ internal class Program
         }
     }
 
+
     static void SimulateKeyPress(SocketPayload payload)
     {
+
         Dictionary<Commands, ushort> CommandToVkCodeMap = new()
         {
             // VK_RETURN
@@ -383,13 +356,12 @@ internal class Program
                 SetForegroundWindow(hWnd);
 
                 Console.WriteLine($"[Simulate]: " +
-                    $"\n Command: {payload.command} " +
-                    $"\n Action: {payload.action} " +
-                    $"\n Virtual Code: {vkCode} " +
-                    $"\n Timestamp: {payload.timestamp} " +
-                    $"\n");
+                                  $"\n Command: {payload.command} " +
+                                  $"\n Action: {payload.action} " +
+                                  $"\n Virtual Code: {vkCode} " +
+                                  $"\n Timestamp: {payload.timestamp} " +
+                                  $"\n");
 
-                Thread.Sleep(1);
                 SendInputCommand(payload.action == Actions.Down ? KEYEVENTF_KEYDOWN : KEYEVENTF_KEYUP, vkCode);
             }
         }

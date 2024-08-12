@@ -2,22 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Snes Controller</title>
     <style>
-      @charset "UTF-8";
-      @import url("https://fonts.googleapis.com/css?family=Lato:400,400i,700");
-
-      @font-face {
-        font-family: "AgencyFB";
-        src: url("fonts/AgencyFB.eot");
-        src: local("☺"), url("fonts/AgencyFB.woff") format("woff"),
-          url("fonts/AgencyFB.ttf") format("truetype"),
-          url("fonts/AgencyFB.svg") format("svg");
-        font-weight: normal;
-        font-style: normal;
-      }
 
       * {
         margin: 0;
@@ -185,11 +172,11 @@
           inset 1px -2px 1px 1px rgba(255, 255, 255, 0.2);
         box-shadow: inset -1px 2px 1px 1px rgba(0, 0, 0, 0.4),
           inset 1px -2px 1px 1px rgba(255, 255, 255, 0.2);
-        height: 9rem;
-        left: 4rem;
-        position: absolute;
-        top: 4rem;
-        width: 9rem;
+          left: 2rem;
+          position: absolute;
+          top: 2.9rem;
+        height: 12rem;
+        width: 12rem;
         z-index: 20;
       }
 
@@ -203,7 +190,7 @@
       .dpad__center {
         background: #656565;
         height: 2.7rem;
-        left: 2.2rem;
+        left: 3.5rem;
         position: absolute;
         width: 2.4rem;
       }
@@ -218,9 +205,9 @@
         -webkit-box-shadow: -1px 1px rgba(255, 255, 255, 0.2);
         box-shadow: -1px 1px rgba(255, 255, 255, 0.2);
         height: 1.5rem;
-        left: 8px;
+        left: 10px;
         position: absolute;
-        top: 8px;
+        top: 12px;
         width: 1.5rem;
       }
 
@@ -229,8 +216,8 @@
           inset -1px 2px 1px 1px rgba(255, 255, 255, 0.3);
         box-shadow: 1px 3px rgba(0, 0, 0, 0.7),
           inset -1px 2px 1px 1px rgba(255, 255, 255, 0.3);
-        height: 7rem;
-        left: 3.2rem;
+        height: 9.25rem;
+        left: 4.75rem;
         top: 1rem;
         width: 2.5rem;
       }
@@ -254,13 +241,13 @@
         box-shadow: 2px 2px rgba(0, 0, 0, 0.7),
           inset -1px 2px 1px 1px rgba(255, 255, 255, 0.3);
         height: 2.5rem;
-        left: 1rem;
-        top: 3.2rem;
-        width: 7rem;
+        left: 1.25rem;
+        top: 4.5rem;
+        width: 9.25rem;
       }
 
       .arrow--top {
-        height: 2.5rem;
+        height: 3.25rem;
         width: 2.5rem;
         margin-top: 0.25rem;
         border-top-left-radius: 0.25rem;
@@ -270,7 +257,7 @@
       .arrow--bottom {
         position: absolute;
         bottom: 0;
-        height: 2.5rem;
+        height: 3.25rem;
         width: 2.5rem;
         margin-top: 0.25rem;
         border-top-left-radius: 0.25rem;
@@ -282,7 +269,7 @@
         bottom: 0;
         left: 0;
         height: 2.5rem;
-        width: 2.5rem;
+        width: 3.25rem;
         margin-top: 0.25rem;
         border-top-left-radius: 0.25rem;
         border-top-right-radius: 0.25rem;
@@ -293,7 +280,7 @@
         bottom: 0;
         right: 0;
         height: 2.5rem;
-        width: 2.5rem;
+        width: 3.25rem;
         margin-top: 0.25rem;
         border-top-left-radius: 0.25rem;
         border-top-right-radius: 0.25rem;
@@ -445,7 +432,7 @@
         background: #a8aaaa;
         border: 2px solid rgba(0, 0, 0, 0.5);
         border-radius: 50px;
-        height: 3.4rem;
+        height: 4rem;
         position: absolute;
         width: 7.8rem;
         -webkit-transform: rotate(-40deg);
@@ -506,9 +493,9 @@
           inset -2px 2px rgba(255, 255, 255, 0.3);
         box-shadow: -2px 2px rgba(0, 0, 0, 0.7),
           inset -2px 2px rgba(255, 255, 255, 0.3);
-        height: 2.6em;
+        height: 3em;
         position: absolute;
-        width: 2.6em;
+        width: 3em;
       }
 
       .button-group__button:hover {
@@ -598,90 +585,97 @@
         </div>
       </div>
     </div>
-    <script>
-      const PLAYER = <%player%>;
 
-      const options = [
-        {
-          command: 1,
+    <script id="__SETTINGS__" type="application/json">
+        <%settings%>
+    </script>
+
+    <script>
+        const settingsScript = document.getElementById("__SETTINGS__");
+        const SETTINGS = JSON.parse(settingsScript.textContent);
+
+        const options = [
+         {
+          command: SETTINGS.commands.select,
           id: "command-select",
         },
         {
-          command: 2,
+          command: SETTINGS.commands.start,
           id: "command-start",
         },
         {
-          command: 3,
+          command: SETTINGS.commands.up,
           id: "command-up",
         },
         {
-          command: 4,
+          command: SETTINGS.commands.down,
           id: "command-down",
         },
         {
-          command: 5,
+          command: SETTINGS.commands.left,
           id: "command-left",
         },
         {
-          command: 6,
+          command: SETTINGS.commands.right,
           id: "command-right",
         },
         {
-          command: 7,
+          command: SETTINGS.commands.a,
           id: "command-a",
         },
         {
-          command: 8,
+          command: SETTINGS.commands.b,
           id: "command-b",
         },
         {
-          command: 9,
+          command: SETTINGS.commands.y,
           id: "command-y",
         },
         {
-          command: 10,
+          command: SETTINGS.commands.x,
           id: "command-x",
         },
       ];
 
-      const actions = Object.freeze({
-        Up: 0,
-        Down: 1,
-      });
+        const actions = Object.freeze({
+           Up: 0,
+           Down: 1,
+        });
 
         const client = new WebSocket("wss://192.168.1.6:9999/");
 
         document.querySelector(".logo").addEventListener("dblclick", () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
+            document.fullscreenElement ?
+                document.exitFullscreen() :
+                document.documentElement.requestFullscreen()
       });
 
 
-        document.querySelector(".logo__byline").textContent = `Player ${PLAYER}`;
+        document.querySelector(".logo__byline").textContent = `Controller ${SETTINGS.controller}`;
 
 
       client.onopen = () => {
         console.log("Connection established");
       };
 
-      client.onmessage = (event) => {
+        client.onmessage = (event) => {
+
+            alert(event);
+
         if (!isNaN(Number(event.data))) {
           console.log("Command Received:", event.data);
         }
       };
 
       options.forEach(({ id, command }) => {
-        useEvent(id, "pointerdown", () => {
+        useEvent(id, "touchstart", () => {
           vibrate([30, 30]);
-          sendClient(actions.Down, command);
+          sendClient(SETTINGS.actions.down, command);
         });
 
-        useEvent(id, "pointerup", () => {
+        useEvent(id, "touchend", () => {
           vibrate(30);
-          sendClient(actions.Up, command);
+          sendClient(SETTINGS.actions.Up, command);
         });
       });
 
@@ -702,6 +696,7 @@
 
       function createPayload(action, command) {
         const date = new Date();
+
         return JSON.stringify({
           action,
           command,
