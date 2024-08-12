@@ -124,7 +124,11 @@ internal class Program
 
         var snesWindowTitles = GetSnesWindowTitlev2();
         var selectedWindowTitle = "";
-        var continueRunning = true;
+        var continueRunning = false;
+
+        Input.Init();
+
+       
 
         while (continueRunning)
         {
