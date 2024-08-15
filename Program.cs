@@ -105,9 +105,13 @@ internal class Program
 
     internal static async Task Main()
     {
-        var snesWindowTitle = new Input("Snes9x", () => Snes9x.GetSnesWindowTitles()).RequestWindowTitle();
+        var snesWinSelectedName = new SelectWindow("Snes9x", () => Snes9x.GetSnesWindowTitles()).Request();
 
-        if (!String.IsNullOrEmpty(snesWindowTitle))
+        if (String.IsNullOrEmpty(snesWinSelectedName))
+        {
+            Console.WriteLine("Oops, something went wrong");
+        }
+        else
         {
             var httpListener = new HttpListenerManager(
                 HTTP_LISTENER_PROTOCOL,
@@ -121,7 +125,7 @@ internal class Program
 
                 if (httpContext.Request.IsWebSocketRequest)
                 {
-                    await HandleWebSocketConnection(snesWindowTitle, httpContext);
+                    await HandleWebSocketConnection(snesWinSelectedName, httpContext);
                 }
                 else if (Controller.MatchPath(httpContext))
                 {

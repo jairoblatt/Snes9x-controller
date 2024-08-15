@@ -3,15 +3,15 @@ using static System.ConsoleKey;
 
 namespace Project1
 {
-    internal class Input(string property, Func<List<string>> getWindowTitles)
+    internal class SelectWindow(string property, Func<List<string>> getWindows)
     {
         private const ConsoleKey KEY_EXIT = E;
         private const ConsoleKey KEY_UPDATE = U;
         private bool isRequestRunning = true;
         private string? selectedWindowTitle = null;
-        private List<string> windows = getWindowTitles();
+        private List<string> windows = getWindows();
 
-        public string? RequestWindowTitle()
+        public string? Request()
         {
             while (isRequestRunning)
             {
@@ -35,6 +35,7 @@ namespace Project1
 
             return selectedWindowTitle;
         }
+
 
         private void FoundNone()
         {
@@ -107,7 +108,7 @@ namespace Project1
             if (_consoleKey.Key == KEY_UPDATE)
             {
                 WriteUpdatingSpinner();
-                windows = getWindowTitles();
+                windows = getWindows();
             }
             else if (_consoleKey.Key == KEY_EXIT)
             {
