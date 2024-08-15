@@ -111,20 +111,19 @@ internal class Program
         public ushort wParamH;
     }
 
-    internal const int INPUT_KEYBOARD = 1;
-    internal const uint KEYEVENTF_KEYDOWN = 0;
-    internal const uint KEYEVENTF_KEYUP = 0x0002;
+    private const int INPUT_KEYBOARD = 1;
+    private const uint KEYEVENTF_KEYDOWN = 0;
+    private const uint KEYEVENTF_KEYUP = 0x0002;
 
-    internal const string HTTP_LISTENER_PORT = "9999";
-    internal const string HTTP_LISTENER_PROTOCOL = "https";
-    internal const string HTTP_LISTENER_IP_FALLBACK = "192.168.1.6";
+    private const string HTTP_LISTENER_PORT = "9999";
+    private const string HTTP_LISTENER_PROTOCOL = "https";
+    private const string HTTP_LISTENER_IP_FALLBACK = "192.168.1.6";
 
     internal static async Task Main()
     {
-        var input = new Input();
-        var titleWindow = input.RequestWindowTitle();
+        var windowTitle = new Input().RequestWindowTitle();
 
-        if (!String.IsNullOrEmpty(titleWindow))
+        if (!String.IsNullOrEmpty(windowTitle))
         {
             var httpListener = new HttpListenerManager(
                 HTTP_LISTENER_PROTOCOL,
@@ -138,7 +137,7 @@ internal class Program
 
                 if (httpContext.Request.IsWebSocketRequest)
                 {
-                    await HandleWebSocketConnection(httpContext);
+                    await HandleWebSocketConnection(windowTitle, httpContext);
                 }
                 else if (Controller.MatchPath(httpContext))
                 {
@@ -153,30 +152,7 @@ internal class Program
         }
     }
 
-    static void DisplayUpdating()
-    {
-        string baseMessage = "Updating";
-        char[] spinner = { '|', '/', '-', '\\' };
-
-        for (int i = 0; i < spinner.Length; i++)
-        {
-            Console.Clear();
-            Console.WriteLine($" {spinner[i]} {baseMessage}");
-            Thread.Sleep(333);
-        }
-    }
-
-    static void DisplayWindowTitles(List<string> windowTitles)
-    {
-        Console.WriteLine("Escolha uma janela da lista abaixo:");
-
-        for (int i = 0; i < windowTitles.Count; i++)
-        {
-            Console.WriteLine($" {i + 1}. {windowTitles[i]}");
-        }
-    }
-
-    internal static async Task HandleWebSocketConnection(HttpListenerContext httpContext)
+    internal static async Task HandleWebSocketConnection(string? windowTitle, HttpListenerContext httpContext)
     {
         byte[] buffer = new byte[1024];
         var webSocketContext = await httpContext.AcceptWebSocketAsync(null);
@@ -209,8 +185,8 @@ internal class Program
                     else if (
                         Enum.IsDefined(typeof(Commands), socketPayload.command) && Enum.IsDefined(typeof(Actions), socketPayload.action))
                     {
-
-                        SimulateKeyPress(socketPayload);
+                        var snesWindow = Snes9x.GetSnesWindowByTitle(windowTitle);
+                        SimulateKeyPress(snesWindow, socketPayload);
                     }
                     else
                     {
@@ -234,8 +210,7 @@ internal class Program
         }
     }
 
-
-    static void SimulateKeyPress(SocketPayload payload)
+    static void SimulateKeyPress(IntPtr snesWindow, SocketPayload payload)
     {
 
         Dictionary<Commands, ushort> CommandToVkCodeMap = new()
@@ -278,7 +253,7 @@ internal class Program
         else
         {
 
-            IntPtr hWnd = GetSnesWindow();
+            IntPtr hWnd = snesWindow;
 
             if (hWnd == IntPtr.Zero)
             {
@@ -316,74 +291,5 @@ internal class Program
         };
 
         SendInput(1, [input], Marshal.SizeOf(typeof(INPUT)));
-    }
-
-    static IntPtr GetSnesWindow()
-    {
-        string? snesTitle = GetSnesWindowTitle();
-
-        if (String.IsNullOrEmpty(snesTitle))
-        {
-            return IntPtr.Zero;
-
-        }
-
-        return FindWindow(null, snesTitle);
-    }
-
-    static List<string> GetSnesWindowTitlev2()
-    {
-        List<string> titles = [];
-
-        EnumWindows((hWnd, lParam) =>
-        {
-            if (IsWindowVisible(hWnd))
-            {
-                StringBuilder windowText = new(256);
-
-                GetWindowText(hWnd, windowText, windowText.Capacity);
-
-                string windowTitle = windowText.ToString();
-
-                if (!string.IsNullOrEmpty(windowTitle) && windowTitle.Contains("Snes9x"))
-                {
-                    titles.Add(windowTitle);
-                }
-            }
-
-            return true;
-
-        }, IntPtr.Zero);
-
-
-        return titles;
-    }
-
-    static string? GetSnesWindowTitle()
-    {
-        string? title = null;
-
-        EnumWindows((hWnd, lParam) =>
-        {
-            if (IsWindowVisible(hWnd))
-            {
-                StringBuilder windowText = new(256);
-
-                GetWindowText(hWnd, windowText, windowText.Capacity);
-
-                string windowTitle = windowText.ToString();
-
-                if (!string.IsNullOrEmpty(windowTitle) && windowTitle.Contains("Snes9x"))
-                {
-                    title = windowTitle;
-                }
-            }
-
-            return true;
-
-        }, IntPtr.Zero);
-
-
-        return title;
     }
 }

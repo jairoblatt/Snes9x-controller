@@ -20,7 +20,10 @@ namespace Project1
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        public static List<string> GetSnesWindowTitlev2()
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        public static List<string> GetSnesWindowTitles()
         {
             List<string> titles = [];
 
@@ -46,6 +49,18 @@ namespace Project1
 
 
             return titles;
+        }
+
+        public static IntPtr GetSnesWindowByTitle(string? snesWindowTitle)
+        {
+
+            if (String.IsNullOrEmpty(snesWindowTitle))
+            {
+                return IntPtr.Zero;
+
+            }
+
+            return FindWindow(null, snesWindowTitle);
         }
 
     }

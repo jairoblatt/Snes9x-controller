@@ -5,9 +5,11 @@ namespace Project1
 {
     internal class Input
     {
+        private const ConsoleKey KEY_EXIT = E;
+        private const ConsoleKey KEY_UPDATE = U;
         private bool IsRequestRunning = true;
-        private string? selectedWindow = null;
-        private List<string> snes9xWindows = Snes9x.GetSnesWindowTitlev2();
+        private string? selectedWindowTitle = null;
+        private List<string> snes9xWindows = Snes9x.GetSnesWindowTitles();
 
         public string? RequestWindowTitle()
         {
@@ -31,19 +33,19 @@ namespace Project1
 
             Clear();
 
-            return selectedWindow;
+            return selectedWindowTitle;
         }
 
         private void FoundNone()
         {
             WriteLine("No Snes9x windows were found");
-            UpdateDisplay();
-            UpdateHandleKey(null);
+            WriteUpdateOrExit();
+            HandleUpdateOrExit(null);
         }
 
         private void FoundOne()
         {
-            selectedWindow = snes9xWindows?[0];
+            selectedWindowTitle = snes9xWindows[0];
             IsRequestRunning = false;
         }
 
@@ -63,14 +65,14 @@ namespace Project1
                     WriteLine(selectedIndex == i ? $"> {sn}" : $"  {sn}");
                 }
 
-                UpdateDisplay();
+                WriteUpdateOrExit();
                 var consoleKey = ReadKey(true);
 
                 switch (consoleKey.Key)
                 {
-                    case U:
-                    case E:
-                        UpdateHandleKey(consoleKey);
+                    case KEY_EXIT:
+                    case KEY_UPDATE:
+                        HandleUpdateOrExit(consoleKey);
                         continueRunning = false;
                         break;
 
@@ -84,7 +86,7 @@ namespace Project1
 
                     case Enter:
                         {
-                            selectedWindow = snes9xWindows[selectedIndex];
+                            selectedWindowTitle = snes9xWindows[selectedIndex];
                             continueRunning = false;
                             IsRequestRunning = false;
                         }
@@ -93,29 +95,28 @@ namespace Project1
             }
         }
 
-        private static void UpdateDisplay()
+        private static void WriteUpdateOrExit()
         {
-            WriteLine("Press U to update \nPress E to exit");
+            WriteLine($"Press {KEY_UPDATE} to update \nPress {KEY_EXIT} to exit");
         }
 
-        private void UpdateHandleKey(ConsoleKeyInfo? consoleKey)
+        private void HandleUpdateOrExit(ConsoleKeyInfo? consoleKey)
         {
-            var key = consoleKey ?? ReadKey(true);
+            var _consoleKey = consoleKey ?? ReadKey(true);
 
-            if (key.Key == U)
+            if (_consoleKey.Key == KEY_UPDATE)
             {
-                DisplayUpdating();
-                snes9xWindows = Snes9x.GetSnesWindowTitlev2();
+                WriteUpdatingSpinner();
+                snes9xWindows = Snes9x.GetSnesWindowTitles();
             }
-
-            if (key.Key == E)
+            else if (_consoleKey.Key == KEY_EXIT)
             {
                 IsRequestRunning = false;
             }
         }
 
 
-        private static void DisplayUpdating()
+        private static void WriteUpdatingSpinner()
         {
             char[] spinner = ['|', '/', '-', '\\'];
 
