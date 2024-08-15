@@ -5,13 +5,11 @@ namespace Project1
 {
     internal class Input
     {
-
-        public static void Init()
+        public static string? RequestWindowTitle()
         {
-            var snes9xWindows = Snes9x.GetSnesWindowTitlev2();
             var continueRunning = true;
-            string? selectedWindowTitle = null;
-
+            string? selectedWindow = null;
+            List<string>? snes9xWindows = Snes9x.GetSnesWindowTitlev2();
 
             while (continueRunning)
             {
@@ -20,55 +18,87 @@ namespace Project1
                 switch (snes9xWindows.Count)
                 {
                     case 0:
-                        HandleEmpty(() =>
-                            {
-                                DisplayUpdating();
-                                snes9xWindows = Snes9x.GetSnesWindowTitlev2();
-                            },
-                            () => continueRunning = false
-                        );
+                        NotFound(ref snes9xWindows, ref continueRunning);
                         break;
-
                     case 1:
-                        selectedWindowTitle = snes9xWindows[0];
+                        FoundOne(snes9xWindows, ref selectedWindow, ref continueRunning);
                         break;
                     default:
-                        DisplayWindows(snes9xWindows);
+                        FoundMany(ref snes9xWindows, ref selectedWindow, ref continueRunning);
                         break;
                 }
+            }
 
-                if (snes9xWindows.Count == 0)
+            return selectedWindow;
+        }
+
+        private static void FoundMany(ref List<string> snes9xWindows, ref string? selectedWindow, ref bool continueRunning)
+        {
+            var selectedIndex = 0;
+
+            while (continueRunning)
+            {
+                Clear();
+                WriteLine("There are more than one Snes9x window, select one:");
+
+                for (var i = 0; i < snes9xWindows.Count; i++)
                 {
-                    HandleEmpty(() =>
-                    {
-                        DisplayUpdating();
-                        snes9xWindows = Snes9x.GetSnesWindowTitlev2();
-                    },
-                    () => continueRunning = false);
+                    string optionLabel = selectedIndex == i ? $"> {snes9xWindows[i]}" : $"  {snes9xWindows[i]}";
+                    WriteLine(optionLabel);
                 }
 
+                var consoleKey = ReadKey(true);
+
+                switch (consoleKey.Key)
+                {
+                    case UpArrow:
+                        selectedIndex = selectedIndex - 1 < 0 ? snes9xWindows.Count - 1 : selectedIndex - 1;
+                        break;
+
+                    case DownArrow:
+                        selectedIndex = selectedIndex + 1 > snes9xWindows.Count - 1 ? 0 : selectedIndex + 1;
+                        break;
+
+                    case Enter:
+                        {
+                            selectedWindow = snes9xWindows[selectedIndex];
+                            continueRunning = false;
+                        }
+                        break;
+                }
             }
         }
 
-        private static void HandleEmpty(Action UHandler, Action EHandler)
+        private static void FoundOne(List<string> snes9xWindows, ref string? selectedWindow, ref bool continueRunning)
+        {
+            selectedWindow = snes9xWindows[0];
+            continueRunning = false;
+        }
+
+        private static void NotFound(ref List<string> snes9xWindows, ref bool continueRunning)
         {
             WriteLine("No Snes9x windows were found");
-            WriteLine("Press U to update \nPress E to exit");
+
+            DisplayUpdate();
+
             var consoleKey = ReadKey(true);
 
-            switch (consoleKey.Key)
+            if (consoleKey.Key == U)
             {
-                case U:
-                    UHandler();
-                    break;
-                case E:
-                    EHandler();
-                    break;
+                snes9xWindows = Snes9x.GetSnesWindowTitlev2();
             }
-
+            else if (consoleKey.Key == E)
+            {
+                continueRunning = false;
+            }
         }
 
-        static void DisplayUpdating()
+        private static void DisplayUpdate()
+        {
+            WriteLine("Press U to update \nPress E to exit");
+        }
+
+        static private void DisplayUpdating()
         {
             char[] spinner = ['|', '/', '-', '\\'];
 
@@ -78,9 +108,11 @@ namespace Project1
                 WriteLine($" {spinner[i]} Updating");
                 Thread.Sleep(333);
             }
+
+            Clear();
         }
 
-        public static string? DisplayWindows(List<string> windows)
+        public static string? HandleWindows(List<string> windows, Action UHandler, Action EHandler)
         {
             var selectedIndex = 0;
             var continueRunning = true;
@@ -89,9 +121,7 @@ namespace Project1
             while (continueRunning)
             {
                 Clear();
-                WriteLine("Please select one option:");
-
-
+                WriteLine("There are more than one Snes9x window, select one:");
 
                 for (var i = 0; i < windows.Count; i++)
                 {
@@ -99,19 +129,32 @@ namespace Project1
                     WriteLine(optionLabel);
                 }
 
+                WriteLine();
+                DisplayUpdate();
                 var consoleKey = ReadKey(true);
 
                 switch (consoleKey.Key)
                 {
-                    case ConsoleKey.UpArrow:
+                    case UpArrow:
                         selectedIndex = selectedIndex - 1 < 0 ? windows.Count - 1 : selectedIndex - 1;
                         break;
 
-                    case ConsoleKey.DownArrow:
+                    case DownArrow:
                         selectedIndex = selectedIndex + 1 > windows.Count - 1 ? 0 : selectedIndex + 1;
                         break;
 
-                    case ConsoleKey.Enter:
+                    case U:
+                        {
+                            DisplayUpdating();
+                            UHandler();
+                        }
+                        break;
+
+                    case E:
+                        EHandler();
+                        break;
+
+                    case Enter:
                         {
                             selectedValue = windows[selectedIndex];
                             continueRunning = false;

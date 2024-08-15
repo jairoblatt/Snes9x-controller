@@ -25,7 +25,6 @@ namespace Project1
             Y,
             X
         }
-
         public enum Actions
         {
             Up,
@@ -111,9 +110,9 @@ namespace Project1
 
             string controllerPath = absolutePath[$"{PATH}-".Length..];
 
-            if (int.TryParse(controllerPath, out int Controller) && Enum.IsDefined(typeof(Controllers), Controller))
+            if (int.TryParse(controllerPath, out int controller) && IsValidController(controller))
             {
-                return (Controllers)Controller;
+                return (Controllers)controller;
             }
 
             return default;
@@ -162,6 +161,11 @@ namespace Project1
             {
                 return default;
             }
+        }
+
+        public static bool IsValidController(int controller)
+        {
+            return Enum.IsDefined(typeof(Controllers), controller);
         }
 
         public static bool IsValidCommand(int command)

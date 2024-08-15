@@ -122,13 +122,11 @@ internal class Program
     internal static async Task Main()
     {
 
+        Input.RequestWindowTitle();
+
         var snesWindowTitles = GetSnesWindowTitlev2();
         var selectedWindowTitle = "";
         var continueRunning = false;
-
-        Input.Init();
-
-       
 
         while (continueRunning)
         {
