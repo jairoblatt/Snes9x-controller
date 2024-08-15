@@ -18,7 +18,7 @@ namespace Project1
                 switch (snes9xWindows.Count)
                 {
                     case 0:
-                        NotFound();
+                        FoundNone();
                         break;
                     case 1:
                         FoundOne();
@@ -29,37 +29,23 @@ namespace Project1
                 }
             }
 
+            Clear();
+
             return selectedWindow;
         }
 
-        private void NotFound()
+        private void FoundNone()
         {
             WriteLine("No Snes9x windows were found");
             UpdateDisplay();
             UpdateHandleKey(null);
         }
 
-        private static void UpdateDisplay()
+        private void FoundOne()
         {
-            WriteLine("Press U to update \nPress E to exit");
+            selectedWindow = snes9xWindows?[0];
+            IsRequestRunning = false;
         }
-
-        private void UpdateHandleKey(ConsoleKeyInfo? consoleKey)
-        {
-            var key = consoleKey ?? ReadKey(true);
-
-            if (key.Key == U)
-            {
-                DisplayUpdating();
-                snes9xWindows = Snes9x.GetSnesWindowTitlev2();
-            }
-
-            if (key.Key == E)
-            {
-                IsRequestRunning = false;
-            }
-        }
-
 
         private void FoundMany()
         {
@@ -108,11 +94,27 @@ namespace Project1
             }
         }
 
-        private void FoundOne()
+        private static void UpdateDisplay()
         {
-            selectedWindow = snes9xWindows?[0];
-            IsRequestRunning = false;
+            WriteLine("Press U to update \nPress E to exit");
         }
+
+        private void UpdateHandleKey(ConsoleKeyInfo? consoleKey)
+        {
+            var key = consoleKey ?? ReadKey(true);
+
+            if (key.Key == U)
+            {
+                DisplayUpdating();
+                snes9xWindows = Snes9x.GetSnesWindowTitlev2();
+            }
+
+            if (key.Key == E)
+            {
+                IsRequestRunning = false;
+            }
+        }
+
 
         private static void DisplayUpdating()
         {

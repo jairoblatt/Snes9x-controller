@@ -122,78 +122,9 @@ internal class Program
     internal static async Task Main()
     {
         var input = new Input();
-        input.RequestWindowTitle();
+        var titleWindow = input.RequestWindowTitle();
 
-        var snesWindowTitles = GetSnesWindowTitlev2();
-        var selectedWindowTitle = "";
-        var continueRunning = false;
-
-        while (continueRunning)
-        {
-            Console.Clear();
-
-            if (snesWindowTitles.Count == 0)
-            {
-                Console.WriteLine("No Snes9x windows were found");
-                Console.WriteLine("Press U to update \nPress E to exit");
-
-                var notFoundKey = Console.ReadKey(true);
-
-                if (notFoundKey.Key == ConsoleKey.U)
-                {
-                    DisplayUpdating();
-                    snesWindowTitles = GetSnesWindowTitlev2();
-
-                }
-                else if (notFoundKey.Key == ConsoleKey.E)
-                {
-                    continueRunning = false;
-                }
-
-            }
-            else if (snesWindowTitles.Count == 1)
-            {
-                selectedWindowTitle = snesWindowTitles[0];
-                continueRunning = false;
-            }
-            else
-            {
-                DisplayWindowTitles(snesWindowTitles);
-
-                Console.WriteLine(
-                "Press a number to select the window" +
-                "\n Press U to update" +
-                "\n Press E to exit"
-  );
-
-                var key = Console.ReadKey(true);
-
-                if (key.Key == ConsoleKey.U)
-                {
-                    DisplayUpdating();
-
-                    snesWindowTitles = GetSnesWindowTitlev2();
-                }
-                else if (key.Key == ConsoleKey.E)
-                {
-                    continueRunning = false;
-                }
-                else if (key.Key >= ConsoleKey.D1 && key.Key <= ConsoleKey.D9)
-                {
-                    int choice = key.Key - ConsoleKey.D1 + 1;
-
-                    if (choice > 0 && choice <= snesWindowTitles.Count)
-                    {
-                        Console.Clear();
-                        selectedWindowTitle = snesWindowTitles[choice - 1];
-                        continueRunning = false;
-                    }
-                }
-            }
-        }
-
-
-        if (!String.IsNullOrEmpty(selectedWindowTitle))
+        if (!String.IsNullOrEmpty(titleWindow))
         {
             var httpListener = new HttpListenerManager(
                 HTTP_LISTENER_PROTOCOL,
