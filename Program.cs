@@ -121,8 +121,8 @@ internal class Program
 
     internal static async Task Main()
     {
-
-        Input.RequestWindowTitle();
+        var input = new Input();
+        input.RequestWindowTitle();
 
         var snesWindowTitles = GetSnesWindowTitlev2();
         var selectedWindowTitle = "";
