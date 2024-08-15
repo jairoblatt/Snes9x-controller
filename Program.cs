@@ -38,9 +38,6 @@ internal class Program
         public string? token { get; set; }
     }
 
-    [DllImport("user32.dll", SetLastError = true)]
-    internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -48,19 +45,7 @@ internal class Program
     [DllImport("user32.dll")]
     public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
-    [DllImport("user32.dll")]
-    internal static extern ushort MapVirtualKey(ushort wCode, uint wMapType);
-
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
-
-    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool IsWindowVisible(IntPtr hWnd);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct INPUT
@@ -114,16 +99,15 @@ internal class Program
     private const int INPUT_KEYBOARD = 1;
     private const uint KEYEVENTF_KEYDOWN = 0;
     private const uint KEYEVENTF_KEYUP = 0x0002;
-
     private const string HTTP_LISTENER_PORT = "9999";
     private const string HTTP_LISTENER_PROTOCOL = "https";
     private const string HTTP_LISTENER_IP_FALLBACK = "192.168.1.6";
 
     internal static async Task Main()
     {
-        var windowTitle = new Input().RequestWindowTitle();
+        var snesWindowTitle = new Input("Snes9x", () => Snes9x.GetSnesWindowTitles()).RequestWindowTitle();
 
-        if (!String.IsNullOrEmpty(windowTitle))
+        if (!String.IsNullOrEmpty(snesWindowTitle))
         {
             var httpListener = new HttpListenerManager(
                 HTTP_LISTENER_PROTOCOL,
@@ -137,7 +121,7 @@ internal class Program
 
                 if (httpContext.Request.IsWebSocketRequest)
                 {
-                    await HandleWebSocketConnection(windowTitle, httpContext);
+                    await HandleWebSocketConnection(snesWindowTitle, httpContext);
                 }
                 else if (Controller.MatchPath(httpContext))
                 {
@@ -217,31 +201,22 @@ internal class Program
         {
             // VK_RETURN
             { Commands.Select, 0x0D },
-
             // VK_SPACE
             { Commands.Start, 0x20 },
-
             // VK_UP
             { Commands.Up, 0x26 },
-
             // VK_DOWN
             { Commands.Down, 0x28 },
-
             // VK_LEFT
             { Commands.Left, 0x25 },
-
             // VK_RIGHT
             { Commands.Right, 0x27 },
-
             // V
             { Commands.A, 0x56 },
-
             // C
             { Commands.B, 0x43 },
-
             // X
             { Commands.Y, 0x58 },
-
             // D
             { Commands.X, 0x44 }
         };

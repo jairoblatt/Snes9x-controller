@@ -3,21 +3,21 @@ using static System.ConsoleKey;
 
 namespace Project1
 {
-    internal class Input
+    internal class Input(string property, Func<List<string>> getWindowTitles)
     {
         private const ConsoleKey KEY_EXIT = E;
         private const ConsoleKey KEY_UPDATE = U;
-        private bool IsRequestRunning = true;
+        private bool isRequestRunning = true;
         private string? selectedWindowTitle = null;
-        private List<string> snes9xWindows = Snes9x.GetSnesWindowTitles();
+        private List<string> windows = getWindowTitles();
 
         public string? RequestWindowTitle()
         {
-            while (IsRequestRunning)
+            while (isRequestRunning)
             {
                 Clear();
 
-                switch (snes9xWindows.Count)
+                switch (windows.Count)
                 {
                     case 0:
                         FoundNone();
@@ -38,15 +38,15 @@ namespace Project1
 
         private void FoundNone()
         {
-            WriteLine("No Snes9x windows were found");
+            WriteLine($"No {property} windows were found");
             WriteUpdateOrExit();
             HandleUpdateOrExit(null);
         }
 
         private void FoundOne()
         {
-            selectedWindowTitle = snes9xWindows[0];
-            IsRequestRunning = false;
+            selectedWindowTitle = windows[0];
+            isRequestRunning = false;
         }
 
         private void FoundMany()
@@ -57,12 +57,12 @@ namespace Project1
             while (continueRunning)
             {
                 Clear();
-                WriteLine("There are more than one Snes9x window, select one:");
+                WriteLine($"There is more than one {property} window running, select one:");
 
-                for (var i = 0; i < snes9xWindows.Count; i++)
+                for (var i = 0; i < windows.Count; i++)
                 {
-                    var sn = snes9xWindows[i];
-                    WriteLine(selectedIndex == i ? $"> {sn}" : $"  {sn}");
+                    var win = windows[i];
+                    WriteLine(selectedIndex == i ? $"> {win}" : $"  {win}");
                 }
 
                 WriteUpdateOrExit();
@@ -77,18 +77,18 @@ namespace Project1
                         break;
 
                     case UpArrow:
-                        selectedIndex = selectedIndex - 1 < 0 ? snes9xWindows.Count - 1 : selectedIndex - 1;
+                        selectedIndex = selectedIndex - 1 < 0 ? windows.Count - 1 : selectedIndex - 1;
                         break;
 
                     case DownArrow:
-                        selectedIndex = selectedIndex + 1 > snes9xWindows.Count - 1 ? 0 : selectedIndex + 1;
+                        selectedIndex = selectedIndex + 1 > windows.Count - 1 ? 0 : selectedIndex + 1;
                         break;
 
                     case Enter:
                         {
-                            selectedWindowTitle = snes9xWindows[selectedIndex];
+                            selectedWindowTitle = windows[selectedIndex];
                             continueRunning = false;
-                            IsRequestRunning = false;
+                            isRequestRunning = false;
                         }
                         break;
                 }
@@ -107,11 +107,11 @@ namespace Project1
             if (_consoleKey.Key == KEY_UPDATE)
             {
                 WriteUpdatingSpinner();
-                snes9xWindows = Snes9x.GetSnesWindowTitles();
+                windows = getWindowTitles();
             }
             else if (_consoleKey.Key == KEY_EXIT)
             {
-                IsRequestRunning = false;
+                isRequestRunning = false;
             }
         }
 
