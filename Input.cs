@@ -60,8 +60,7 @@ namespace Project1
                 for (var i = 0; i < snes9xWindows.Count; i++)
                 {
                     var sn = snes9xWindows[i];
-                    string optionLabel = selectedIndex == i ? $"> {sn}" : $"  {sn}";
-                    WriteLine(optionLabel);
+                    WriteLine(selectedIndex == i ? $"> {sn}" : $"  {sn}");
                 }
 
                 UpdateDisplay();
